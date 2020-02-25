@@ -29,7 +29,7 @@ RCT_EXPORT_MODULE();
 
     UIView *rootView = [self shareView];
     if (rootView.backgroundColor == nil) {
-        rootView.backgroundColor = [[UIColor alloc] initWithRed:1 green:1 blue:1 alpha:0.0];
+        rootView.backgroundColor = [UIColor clearColor];
     }
 
     self.view = rootView;
