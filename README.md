@@ -430,7 +430,7 @@ So the `app.ios` and `app.android.js` refers to main app and `share.ios.js` and 
 import ShareExtension from 'react-native-share-extension'
 ...
 
-const { type, value } = await ShareExtension.data()
+const results = await ShareExtension.data()
 ```
 
 - `close()`
