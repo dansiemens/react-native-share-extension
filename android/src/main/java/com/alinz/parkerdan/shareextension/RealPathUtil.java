@@ -178,6 +178,23 @@ public class RealPathUtil {
 
  private static String copyFile(Context context, Uri uri) {
 
+    String extension;
+    String mimeType = context.getContentResolver().getType(uri);
+
+    switch (mimeType) {
+        case "image/jpeg":
+            extension = ".jpg";
+            break;
+        case "image/png":
+            extension = ".png";
+            break;
+        case "application/pdf":
+            extension = ".pdf";
+            break;
+        default:
+            extension = ".jpg";
+    }
+
     String filePath;
     InputStream inputStream = null;
     BufferedOutputStream outStream = null;
@@ -185,7 +202,7 @@ public class RealPathUtil {
         inputStream = context.getContentResolver().openInputStream(uri);
 
         File extDir = context.getExternalFilesDir(null);
-        filePath = extDir.getAbsolutePath() + "/IMG_" + UUID.randomUUID().toString() + ".jpg";
+        filePath = extDir.getAbsolutePath() + "/IMG_" + UUID.randomUUID().toString() + extension;
         outStream = new BufferedOutputStream(new FileOutputStream
                 (filePath));
 
