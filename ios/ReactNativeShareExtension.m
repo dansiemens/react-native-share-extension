@@ -5,6 +5,7 @@
 #define URL_IDENTIFIER @"public.url"
 #define IMAGE_IDENTIFIER @"public.image"
 #define TEXT_IDENTIFIER (NSString *)kUTTypePlainText
+#define PDF_IDENTIFIER (NSString *)kUTTypePDF
 
 NSExtensionContext* extensionContext;
 
@@ -79,6 +80,7 @@ RCT_REMAP_METHOD(data,
         __block NSItemProvider *urlProvider = nil;
         __block NSItemProvider *imageProvider = nil;
         __block NSItemProvider *textProvider = nil;
+        __block NSItemProvider *docProvider = nil;
         __block NSUInteger index = 0;
 
         [attachments enumerateObjectsUsingBlock:^(NSItemProvider *provider, NSUInteger idx, BOOL *stop) {
@@ -121,6 +123,20 @@ RCT_REMAP_METHOD(data,
                         callback(itemArray, nil);
                     }
 
+                }];
+            } else if ([provider hasItemConformingToTypeIdentifier:PDF_IDENTIFIER]){
+                docProvider = provider;
+                index += 1;
+                [docProvider loadItemForTypeIdentifier:PDF_IDENTIFIER options:nil completionHandler:^(id<NSSecureCoding> item, NSError *error) {
+                    NSURL *url = (NSURL *)item;
+                    [itemArray addObject: @{
+                                            @"type": @"application/pdf",
+                                            @"value": [url absoluteString]
+                                            }];
+
+                    if (callback && (index == [attachments count])) {
+                        callback(itemArray, nil);
+                    }
                 }];
             } else if([provider hasItemConformingToTypeIdentifier:URL_IDENTIFIER]) {
                 urlProvider = provider;
