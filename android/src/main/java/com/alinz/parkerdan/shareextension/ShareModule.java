@@ -46,6 +46,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         mediaTypesSupported.add("video");
         mediaTypesSupported.add("audio");
         mediaTypesSupported.add("image");
+        mediaTypesSupported.add("application/pdf");
 
         String type = "";
         String action = "";
@@ -68,7 +69,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
                 dataMap.putString("value", intent.getStringExtra(Intent.EXTRA_TEXT));
                 dataArrayMap.pushMap(dataMap);
             } else if (Intent.ACTION_SEND.equals(action) && (
-                    mediaTypesSupported.contains(typePart))) {
+                    mediaTypesSupported.contains(typePart) || mediaTypesSupported.contains(type))) {
                 WritableMap dataMap = Arguments.createMap();
                 dataMap.putString("type", type);
                 Uri uri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
