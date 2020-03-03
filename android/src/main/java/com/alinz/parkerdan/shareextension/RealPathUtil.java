@@ -20,6 +20,7 @@ public class RealPathUtil {
  public static String getRealPathFromURI(final Context context, final Uri uri) {
 
      final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
      // DocumentProvider
      if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
          // ExternalStorageProvider
@@ -104,8 +105,6 @@ public class RealPathUtil {
              final int index = cursor.getColumnIndexOrThrow(column);
              return cursor.getString(index);
          }
-     } catch (Exception e) {
-         return null;
      } finally {
          if (cursor != null)
              cursor.close();
@@ -139,20 +138,18 @@ public class RealPathUtil {
  }
 
  public static String getImagePath(Context context, Uri uri){
-     if (isGoogleOldPhotosUri(uri)) {
-         // return http path, then download file.
-         return uri.getLastPathSegment();
-     } else if (isGoogleNewPhotosUri(uri) || isMMSFile(uri) || isWhatsappFile(uri)) {
-         // copy from uri. context.getContentResolver().openInputStream(uri);
-         return copyFile(context, uri);
-     }
-     final String dataColumn;
-     dataColumn = getDataColumn(context, uri, null, null);
-     if (dataColumn != null){
-         return dataColumn;
-     } else {
-        return copyFile(context, uri);
-     }
+    if ("content".equalsIgnoreCase(uri.getScheme())) {
+
+        if (isGoogleOldPhotosUri(uri)) {
+            // return http path, then download file.
+            return uri.getLastPathSegment();
+        } else if (isGoogleNewPhotosUri(uri) || isMMSFile(uri)) {
+            // copy from uri. context.getContentResolver().openInputStream(uri);
+            return copyFile(context, uri);
+        }
+    }
+
+    return getDataColumn(context, uri, null, null);
  }
 
  /**
@@ -168,32 +165,10 @@ public class RealPathUtil {
  }
 
  public static boolean isMMSFile(Uri uri) {
-    //  uri.getAuthority can be equal to "com.android.mms.file" and "mms"
-    return uri.getAuthority().contains("mms");
-}
-
- public static boolean isWhatsappFile(Uri uri) {
-    return "com.whatsapp.provider.media".equals(uri.getAuthority());
+    return "com.android.mms.file".equals(uri.getAuthority());
 }
 
  private static String copyFile(Context context, Uri uri) {
-
-    String extension;
-    String mimeType = context.getContentResolver().getType(uri);
-
-    switch (mimeType) {
-        case "image/jpeg":
-            extension = ".jpg";
-            break;
-        case "image/png":
-            extension = ".png";
-            break;
-        case "application/pdf":
-            extension = ".pdf";
-            break;
-        default:
-            extension = ".jpg";
-    }
 
     String filePath;
     InputStream inputStream = null;
@@ -202,7 +177,7 @@ public class RealPathUtil {
         inputStream = context.getContentResolver().openInputStream(uri);
 
         File extDir = context.getExternalFilesDir(null);
-        filePath = extDir.getAbsolutePath() + "/IMG_" + UUID.randomUUID().toString() + extension;
+        filePath = extDir.getAbsolutePath() + "/IMG_" + UUID.randomUUID().toString() + ".jpg";
         outStream = new BufferedOutputStream(new FileOutputStream
                 (filePath));
 
