@@ -152,6 +152,27 @@ public class ShareModule extends ReactContextBaseJavaModule {
         return new File(getTempCacheDirectory(), fileName);
     }
 
+    public WritableMap convertImage(Activity currentActivity, String type, String path, Uri uri) {
+        // make a jpeg copy of the image in the cache directory, return that URI instead
+        WritableMap dataMap = Arguments.createMap();
+        try {
+            Bitmap bitmap = BitmapFactory.decodeFile(RealPathUtil.getRealPathFromURI(currentActivity, uri));
+            File outputFile = createTempCaptureFile(CameraConstants.JPEG);
+            OutputStream outStream = new FileOutputStream(outputFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+            outStream.flush();
+            outStream.close();
+            dataMap.putString("type", CameraConstants.JPEG_MIME_TYPE);
+            dataMap.putString("value", "file://" + outputFile.getAbsolutePath());
+            Log.i("smx-share: succeeded", outputFile.getAbsolutePath());
+        } catch (Exception e) {
+            Log.e("smx-share: exception", e.getMessage());
+            dataMap.putString("type", type);
+            dataMap.putString("value", path);
+        }
+        return dataMap;
+    }
+
     public WritableArray processIntent() {
         WritableArray dataArrayMap = Arguments.createArray();
         Set<String> mediaTypesSupported = new HashSet<String>();
@@ -184,41 +205,34 @@ public class ShareModule extends ReactContextBaseJavaModule {
                 dataArrayMap.pushMap(dataMap);
             } else if (Intent.ACTION_SEND.equals(action) && (
                     mediaTypesSupported.contains(typePart) || mediaTypesSupported.contains(type))) {
-                WritableMap dataMap = Arguments.createMap();
-                dataMap.putString("type", type);
 
                 Uri uri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 String path =  "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri);
 
                 // Check the path coming from the uri for type, intent.getType() only returns image/jpeg for some reason
-                if (this.isImage(type) && !path.contains("jpg")) {
-                    // make a jpeg copy of the image in the cache directory, return that URI instead
-                    try {
-                        Bitmap bitmap = BitmapFactory.decodeFile(RealPathUtil.getRealPathFromURI(currentActivity, uri));
-                        File outputFile = createTempCaptureFile(CameraConstants.JPEG);
-                        OutputStream outStream = new FileOutputStream(outputFile);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
-                        outStream.flush();
-                        outStream.close();
-                        dataMap.putString("value", "file://" + outputFile.getAbsolutePath());
-                        Log.i("smx-share: succeeded", outputFile.getAbsolutePath());
-                    } catch (Exception e) {
-                        Log.e("smx-share: exception", e.getMessage());
-                        dataMap.putString("value", path);
-                    }
+                if (this.isImage(type) && !path.endsWith("jpg")) {
+                    WritableMap dataMap = this.convertImage(currentActivity, type, path, uri);
+                    dataArrayMap.pushMap(dataMap);
                 } else {
                     Log.i("smx-share: no convert", type);
-                    dataMap.putString("value", path);
-                }
-
-                dataArrayMap.pushMap(dataMap);
-            } else if (Intent.ACTION_SEND_MULTIPLE.equals(action) && mediaTypesSupported.contains(typePart)) {
-                ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                for (Uri uri : uris) {
                     WritableMap dataMap = Arguments.createMap();
                     dataMap.putString("type", type);
-                    dataMap.putString("value", "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri));
+                    dataMap.putString("value", path);
                     dataArrayMap.pushMap(dataMap);
+                }
+            } else if (Intent.ACTION_SEND_MULTIPLE.equals(action) && (mediaTypesSupported.contains(typePart) || mediaTypesSupported.contains(type))) {
+                ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                for (Uri uri : uris) {
+                    String path =  "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri);
+                    if (this.isImage(type) && !path.endsWith("jpg")) {
+                        WritableMap dataMap = this.convertImage(currentActivity, type, path, uri);
+                        dataArrayMap.pushMap(dataMap);
+                    } else {
+                        WritableMap dataMap = Arguments.createMap();
+                        dataMap.putString("type", type);
+                        dataMap.putString("value", "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri));
+                        dataArrayMap.pushMap(dataMap);
+                    }
                 }
             }
         }
