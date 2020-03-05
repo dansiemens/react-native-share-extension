@@ -43,8 +43,8 @@ public class ShareModule extends ReactContextBaseJavaModule {
     public WritableArray processIntent() {
         WritableArray dataArrayMap = Arguments.createArray();
         Set<String> mediaTypesSupported = new HashSet<String>();
-        mediaTypesSupported.add("video");
-        mediaTypesSupported.add("audio");
+        // mediaTypesSupported.add("video");
+        // mediaTypesSupported.add("audio");
         mediaTypesSupported.add("image");
         mediaTypesSupported.add("application/pdf");
 
