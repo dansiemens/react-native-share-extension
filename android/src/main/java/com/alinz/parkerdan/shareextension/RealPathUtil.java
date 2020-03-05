@@ -8,6 +8,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.content.ContentUris;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -187,6 +188,15 @@ public class RealPathUtil {
             break;
         case "image/png":
             extension = ".png";
+            break;
+        case "image/tiff":
+            extension = ".tif";
+            break;
+        case "image/x-ms-bmp":
+            extension = ".bmp";
+            break;
+        case "image/gif":
+            extension = ".gif";
             break;
         case "application/pdf":
             extension = ".pdf";
