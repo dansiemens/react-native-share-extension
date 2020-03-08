@@ -1,5 +1,20 @@
 # React Native Share Extension
 
+### Fork Features
+
+This repo is a fork of <a href="https://github.com/alinz/react-native-share-extension">alinz/react-native-share-extension</a>. It includes some extra features, such as: 
+
+:white_check_mark: Support for multiple data types, courtesy of a PR by <a href="https://github.com/arribbar/react-native-share-extension/tree/multipleDataType">arribbar</a>
+
+:white_check_mark: PDF Support
+
+:white_check_mark: (iOS) Cocoapods Support
+
+:white_check_mark: (Android) image autoconversion to JPEG
+
+
+### Repo Info
+
 This is a helper module which brings react native as an engine to drive share extension for your app.
 
 <p align="center">
